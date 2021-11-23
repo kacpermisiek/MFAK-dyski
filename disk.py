@@ -7,15 +7,16 @@ import settings
 
 class Disk:
 
-    # Mnoznik tlumienia predkosci przy odbiciu
+    # Multiplier of damping after hit at bounds
     damping = 0.6
+
+    # Physic variables
     G = 6.67
     M = 10000
 
     def __init__(self, screen):
         self.screen = screen
         self.r = uniform(5, 10)
-        #self.m = self.r * 0.08
         self.pos = pygame.math.Vector2((uniform(2 * self.r, settings.display_size_x - 2 * self.r)),
                                        (uniform(2 * self.r, settings.display_size_y - 2 * self.r)))
         self.V = pygame.math.Vector2(uniform(-1, 1), uniform(-1, 1))
@@ -29,42 +30,37 @@ class Disk:
     def draw(self, size_multiplier):
         pygame.draw.circle(self.screen, self.color, (self.pos.x, self.pos.y), self.r * size_multiplier)
 
-    # Sila grawitacji
+    # Gravity force
     def gravity(self, dt, size_multiplier):
         self.pos += self.V * dt
         self.V.y += settings.g * dt
-        self.air_resistance(dt, size_multiplier)
-        self.check_bounds(size_multiplier)
 
-    # Sila przyciagania w miejscu kursora
+    # Animation of center on mouse position
     def focus_on_cursor(self, dt, size_multiplier):
-        self.F = (pygame.math.Vector2(pygame.mouse.get_pos()) - self.pos).normalize()
-        self.V += self.F * dt * 0.5
-        self.pos += self.V
-        self.air_resistance(dt, size_multiplier)
-        self.check_bounds(size_multiplier)
+        cx = pygame.mouse.get_pos()[0]
+        cy = pygame.mouse.get_pos()[1]
+        self.center_force(dt, size_multiplier, cx, cy)
 
-    # Opor aerodynamiczny
-    def air_resistance(self, dt, size_multiplier):
+    # Animation of center force
+    def focus_on_center(self, dt, size_multiplier):
+        cx = settings.display_size_x / 2
+        cy = settings.display_size_y / 2
+        self.center_force(dt, size_multiplier, cx, cy)
+
+    # Air resistance
+    def air_resistance(self):
         self.V += -6 * m.pi * self.V * 0.00001708 * self.r
 
-    # Sila przyciagania w srodku ukladu
-    def center_force(self, dt, size_multiplier):
-        self.F = (pygame.math.Vector2(settings.display_size_x / 2, settings.display_size_y / 2) - self.pos).normalize()
-        self.V += self.F
-        self.pos += self.V * dt * 0.5
-        self.air_resistance(dt, size_multiplier)
-        self.check_bounds(size_multiplier)
-
-    # Resetowanie predkosci dysku
+    # Reset velocity of disk
     def pause(self):
         self.V = pygame.math.Vector2(0, 0)
 
-    # Funkcja odbijania dyskow o krawedzie ekranu
+    # Check if position of disk is near to bounds, if yes - revert velocity
     def check_bounds(self, size_multiplier):
         if self.pos.y - self.r * size_multiplier < 0:
             self.V.y *= -self.damping
-            self.pos.y = 1.1 * self.r * size_multiplier
+            self.pos.y = self.r * size_multiplier
+            self.pos.y = self.r * size_multiplier
         elif self.pos.y + self.r * size_multiplier > settings.display_size_y:
             self.V.y *= -self.damping
             self.pos.y = settings.display_size_y - self.r * size_multiplier
@@ -76,9 +72,8 @@ class Disk:
             self.V.x *= -self.damping
             self.pos.x = settings.display_size_x - 1.1 * self.r * size_multiplier
 
-    def new_force(self, dt, size_multiplier):
-        cx = settings.display_size_x / 2
-        cy = settings.display_size_y / 2
+    # Function that is calculating acceleration from gravity
+    def center_force(self, dt, size_multiplier, cx, cy):
         x = self.pos.x - cx
         y = self.pos.y - cy
 
@@ -95,6 +90,3 @@ class Disk:
         self.V.y += (self.a.y * dt)
 
         self.pos += self.V
-
-        self.air_resistance(dt, size_multiplier)
-        self.check_bounds(size_multiplier)

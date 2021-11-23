@@ -43,32 +43,28 @@ def main():
                     settings.animation = 3
                 if event.key == pygame.K_4:
                     settings.animation = 4
-                if event.key == pygame.K_5:
-                    settings.animation = 5
 
         match settings.animation:
             case 1:
-                # Animacja grawitacji
+                # Basic animation of gravity
                 for i in range(slider1.get_value()):
                     disks[i].gravity(dt, slider2.get_value())
             case 2:
-                # Animacja przyciagania na pozycje kursora
+                # Animation of center force
+                for i in range(slider1.get_value()):
+                    disks[i].focus_on_center(dt, slider2.get_value())
+            case 3:
+                # Animation of center on mouse position
                 for i in range(slider1.get_value()):
                     disks[i].focus_on_cursor(dt, slider2.get_value())
-            case 3:
-                # Animacja przyciagania do srodka kursora
-                for i in range(slider1.get_value()):
-                    disks[i].center_force(dt, slider2.get_value())
             case 4:
-                # Zatrzymanie animacji, zerowanie predkosci dyskow
+                # Stop animation (V = 0)
                 for i in range(slider1.get_value()):
                     disks[i].pause()
-            case 5:
-                for i in range(slider1.get_value()):
-                    disks[i].new_force(dt, slider2.get_value())
 
-        # Rysowanie dyskow
         for i in range(slider1.get_value()):
+            disks[i].air_resistance()
+            disks[i].check_bounds(slider2.get_value())
             disks[i].draw(slider2.get_value())
 
         pygame.display.flip()

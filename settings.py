@@ -11,7 +11,7 @@ N = 1000
 FPS = 30
 g = 9.81
 airResistance = True
-animation = 5
+animation = 4
 
 
 
